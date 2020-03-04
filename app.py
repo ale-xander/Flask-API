@@ -15,6 +15,15 @@ items = []
 
 
 class Item(Resource):
+    #run arguments thru parser and see what arguments match in the parser
+    parser = reqparse.RequestParser()
+    #disregard anything other than price (such as name). and price is required
+    parser.add_argument(
+        'price',
+        type=float,
+        required=True,
+        help='this field cannnot be left blank'
+    )
     @jwt_required()
     def get(self, name):
         #first item found by filter function. None is in case it didn't find anything
@@ -26,7 +35,9 @@ class Item(Resource):
         #if item found and it is not None
         if next(filter(lambda x: x['name'] == name, items), None):
             return {'message': 'this item already exists'}, 400
-        data = request.get_json()
+        
+        data = Item.parser.parse_args()
+        
         item = {'name': name, 'price': data['price']}
         items.append(item)
         return item, 201
@@ -38,18 +49,7 @@ class Item(Resource):
         return {'message': 'item deleted'}
 
     def put(self, name):
-        #run arguments thru parser and see what arguments match in the parser
-        parser = reqparse.RequestParser()
-        #disregard anything other than price (such as name). and price is required
-        parser.add_argument(
-            'price',
-            type=float,
-            required=True,
-            help='this field cannnot be left blank'
-        )
-
-        data = parser.parse_args()
-        
+        data = Item.parser.parse_args()
         item = next(filter(lambda x: x['name'] == name, items), None)
         if item is None:
             item = {'name': name, 'price': data['price']}
