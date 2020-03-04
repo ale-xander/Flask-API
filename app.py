@@ -6,6 +6,7 @@ api = Api(app)
 
 items = []
 
+
 class Item(Resource):
     def get(self, name):
         for item in items:
